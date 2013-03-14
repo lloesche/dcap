@@ -1,0 +1,134 @@
+#!/usr/bin/env ruby
+require 'packetfu'
+require 'optparse'
+require 'timeout'
+
+module Conversis
+  module Dcap
+
+    class Config
+      attr_accessor :runtime, :promisc, :filter, :sessionid, :ruby_code, :interface, :modules, :outfile, :regex, :interface_ip, :hexout
+      def initialize(interface = nil, runtime = 60, promisc = false, filter = 'ip', sessionid = nil, ruby_code = nil, modules = nil, outfile = nil, regex = nil, hexout = false)
+        @runtime, @promisc, @filter, @sessionid, @ruby_code, @interface, @modules, @outfile, @regex, @hexout = runtime, promisc, filter, sessionid, ruby_code, interface, modules, outfile, regex, hexout
+        @sessionid = (0..16).to_a.map{|a| rand(16).to_s(16)}.join if @sessionid == nil
+        @ruby_code = 'puts "#{Time.now} [#{config.sessionid}] #{protocol} packet #{source_address}:#{source_port} => #{destination_address}:#{destination_port}\n#{Conversis::Utils.hexify(packet.payload, config.hexout)}"' if ruby_code == nil
+      end
+    end
+
+    def self.capture(config)
+      begin
+        status = Timeout::timeout(config.runtime) do
+          cap = PacketFu::Capture.new(:iface => config.interface, :start => true, :filter => config.filter, :promisc => config.promisc)
+          puts "packet capture started on interface with IP #{config.interface_ip} running for #{config.runtime} seconds"
+          loop do
+            cap.stream.each do |pkt|
+              packet = PacketFu::Packet.parse(pkt)
+
+              source_address = packet.ip_saddr
+              destination_address = packet.ip_daddr
+              content = packet.payload
+              ascii_content = content.encode Encoding.find('ASCII'), { :invalid => :replace, :undef => :replace, :replace => '', :universal_newline => true }
+              protocol = packet.proto.last
+
+              case packet.ip_proto
+              when 0x06 # tcp
+                source_port = packet.tcp_src
+                destination_port = packet.tcp_dst
+              when 0x11 # udp
+                source_port = packet.udp_src
+                destination_port = packet.udp_dst
+              else
+                source_port = 0
+                destination_port = 0
+              end
+              eval(config.ruby_code)
+            end
+          end
+        end
+      rescue Timeout::Error
+        puts "packet capture ended"
+      end
+    end
+
+  end
+
+  module Utils
+    def self.hexify(str, hexonly = false)
+      str.force_encoding("ASCII-8BIT") if str.respond_to? :force_encoding
+
+      if hexonly
+        ret = str.to_s.unpack("H*")[0]
+      else
+        hexascii_lines = str.to_s.unpack("H*")[0].scan(/.{1,32}/)
+        regex = Regexp.new('[\x00-\x1f\x7f-\xff]', nil, 'n')
+        chars = str.to_s.gsub(regex,'.')
+        chars_lines = chars.scan(/.{1,16}/)
+        ret = []
+
+        hexascii_lines.size.times do |i|
+          ret << "%-48s  %s" % [hexascii_lines[i].gsub(/(.{2})/,"\\1 "),chars_lines[i]]
+        end
+        ret.join("\n")
+      end
+    end
+  end
+
+end
+
+config = Conversis::Dcap::Config.new()
+
+optparse = OptionParser.new do |opts|
+  opts.banner = "Usage: [ruby code block] | dcap [options]"
+
+  opts.on('-t', '--runtime RUNTIME', 'time to capture packets in seconds') { |runtime| config.runtime = runtime.to_i }
+  opts.on('-i', '--interface INTERFACE', 'name of the interface to capture from') { |interface| config.interface = interface }
+  opts.on('-m', '--modules MODULES', 'list of ruby modules to load separated by , (comma)') { |modules| config.modules = modules }
+  opts.on('-f', '--filter PCAPFILTER', 'pcap filter') { |filter| config.filter = filter }
+  opts.on('-o', '--outfile OUTFILE', 'name of file to append output to (default is STDOUT)') { |outfile| config.outfile = outfile }
+  opts.on('-p', '--promisc', 'turn on promisc mode') { |promisc| config.promisc = promisc }
+  opts.on('-s', '--sessionid SESSIONID', 'a unique identifier to prepend all text with (default is a random string)') { |sessionid| config.sessionid = sessionid }
+  opts.on('-r', '--regex REGEX', 'a regex to search for (ignored if code is input on STDIN)') { |regex| config.regex = regex }
+  opts.on('-x', '--hex', 'output data in hex only') { |hexout| config.hexout = hexout }
+end
+
+begin
+  optparse.parse!
+rescue OptionParser::InvalidOption, OptionParser::MissingArgument
+  puts $!.to_s
+  puts optparse
+  exit
+end
+
+config.modules.split(',').each { |m| require m } if config.modules
+
+if(Process.euid.zero?)
+  config.interface = PacketFu::Utils.lookupdev if config.interface == nil
+  packetfu_config = PacketFu::Config.new(PacketFu::Utils.whoami?(:iface => config.interface))
+  config.interface_ip = packetfu_config.ip_saddr
+else
+  abort "Error: dcap must be run as root - aborting"
+end
+
+config.ruby_code = 'hit = packet.payload.scan(/#{config.regex}/i) || nil; puts "#{Time.now} session-id=\"#{config.sessionid}\" protocol=\"#{protocol}\" source-address=\"#{source_address}\" source-port=\"#{source_port}\" destination-address=\"#{destination_address}\" destination-port=\"#{destination_port}\" content=\"#{config.hexout ? Conversis::Utils.hexify(hit[0], true) : (hit[0].encode Encoding.find(\'ASCII\'), { :invalid => :replace, :undef => :replace, :replace => \'\', :universal_newline => true }) }\"" unless hit.size.zero?' if config.regex
+config.ruby_code = $stdin.read if select([$stdin], [], [], 1)
+
+if config.outfile
+  exit if fork
+  Process.setsid
+  exit if fork
+  $stdin.reopen "/dev/null"
+	$stdout.reopen(config.outfile, "a")
+	$stdout.sync = true
+  $stderr.reopen($stdout)
+end
+
+Thread.abort_on_exception = false
+thread = Thread.new do
+  Conversis::Dcap.capture(config)
+end
+
+puts "waiting for capture thread to finish"
+thread.join
+puts "capture thread finished"
+
+exit 0

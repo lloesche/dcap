@@ -1,0 +1,4 @@
+[".{10}\x6C\x75\x6B\x61\x73.{10}", "neil"].each do |sig|
+    hit = packet.payload.scan(/#{sig}/i) || nil
+    puts "from %s to %s [%s]" % [packet.ip_saddr, packet.ip_daddr, hit[0]] unless hit.size.zero?
+end

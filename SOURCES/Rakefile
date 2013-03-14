@@ -1,0 +1,24 @@
+require 'rubygems'
+require 'rubygems/package_task'
+
+spec = Gem::Specification.new do |spec|
+  spec.name = 'dcap'
+  spec.summary = 'distributed traffic capture system'
+  spec.description = <<-TEXT
+This program can capture network traffic in a distributed fashion.
+  TEXT
+  spec.author = 'Lukas Loesche'
+  spec.email = 'l.loesche@conversis.de'
+  spec.homepage = 'http://www.conversis.de/'
+  spec.bindir = 'bin'
+  spec.executables << 'dcap'
+  spec.version = '0.0.1'
+  spec.add_dependency 'packetfu'
+  spec.add_dependency 'hexdump'
+  spec.add_dependency 'pcaprub'
+end
+
+Gem::PackageTask.new(spec) do |pkg|
+  pkg.need_zip = false
+  pkg.need_tar = false
+end
