@@ -11,7 +11,7 @@ You can provide ruby code on STDIN which will be evaluated for every captured pa
   -i --interface INTERFACE - name of the interface to capture from  
   -m --modules MODULES - list of ruby modules to load separated by , (comma)  
   -f --filter PCAPFILTER - pcap filter  
-  -o --outfile OUTFILE - name of file to append output to (default is STDOUT), this will daemonize the process
+  -o --outfile OUTFILE - name of file to append output to (default is STDOUT), this will daemonize the process  
   -p --promisc - turn on promisc mode  
   -s --sessionid SESSIONID - a unique identifier to prepend all text with (default is a random string)  
   -r --regex REGEX - a regex to search for (ignored if code is input on STDIN)  
