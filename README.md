@@ -86,5 +86,5 @@ When installing dcap as a gem they will be automatically installed.
 
   Set interface to promisc mode (only useful on a mirror port) and display local IPs trying to connect to certain remote ports (useful for identifying machines infected with worms)
   ```bash
-  $ echo 'puts source_address' | sudo dcap -i eth0 -p  -f '(dst port 135 or dst port 445 or dst port 1433) and tcp[tcpflags] & (tcp-syn) != 0 and tcp[tcpflags] & (tcp-ack) = 0 and src net 10.16.0.0/16'
+  $ echo 'puts source_address' | sudo dcap -i eth0 -p -f '(dst port 135 or dst port 445 or dst port 1433) and tcp[tcpflags] & (tcp-syn) != 0 and tcp[tcpflags] & (tcp-ack) = 0 and src net 10.16.0.0/16'
   ```
