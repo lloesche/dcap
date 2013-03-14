@@ -66,3 +66,12 @@ When installing dcap as a gem they will be automatically installed.
   ```bash
   $ sudo dcap -i en0  -s 'myCaptureSession001' -r '.*lukas.*' -o /var/log/dcap.log
   ```
+
+  The following code would sniff for HTTP GET requests and extract the requested URI out of the packet
+  ```bash
+  $ cat http.dcap | sudo dcap -i en0
+
+  $ cat http.dcap
+  /GET (?<url>.*?) HTTP.*/ =~ ascii_content
+  puts "from %s getting url %s" % [destination_address, url] if url
+  ```

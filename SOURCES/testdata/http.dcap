@@ -1,0 +1,2 @@
+/GET (?<url>.*?) HTTP.*/ =~ ascii_content
+puts "from %s getting url %s" % [destination_address, url] if url
