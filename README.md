@@ -7,24 +7,24 @@ You can provide ruby code on STDIN which will be evaluated for every captured pa
 
 # Options
 
-  -t --runtime RUNTIME		time to capture packets in seconds (default is 60 seconds)  
-  -i --interface INTERFACE 	name of the interface to capture from  
-  -m --modules MODULES		list of ruby modules to load separated by , (comma)  
-  -f --filter PCAPFILTER	pcap filter  
-  -o --outfile OUTFILE		name of file to append output to (default is STDOUT)  
-  -p --promisc				turn on promisc mode  
-  -s --sessionid SESSIONID	a unique identifier to prepend all text with (default is a random string)  
-  -r --regex REGEX			a regex to search for (ignored if code is input on STDIN)  
-  -x --hex					output data in hex only  
+  -t --runtime RUNTIME - time to capture packets in seconds (default is 60 seconds)  
+  -i --interface INTERFACE - name of the interface to capture from  
+  -m --modules MODULES - list of ruby modules to load separated by , (comma)  
+  -f --filter PCAPFILTER - pcap filter  
+  -o --outfile OUTFILE - name of file to append output to (default is STDOUT)  
+  -p --promisc - turn on promisc mode  
+  -s --sessionid SESSIONID - a unique identifier to prepend all text with (default is a random string)  
+  -r --regex REGEX - a regex to search for (ignored if code is input on STDIN)  
+  -x --hex - output data in hex only  
 
 # Variables
-  protocol					the IP protocol used (e.g. TCP/UDP/ICMP)  
-  source_address			the IP a packet originated from  
-  source_port				the port a packet originated from  
-  destination_address		the destination IP of the packet  
-  destination_port			the destination port of the packet  
-  content					the payload of the packet (8bit)  
-  ascii_content				the payload of the packet stripped of any non-ascii characters  
+  **protocol**					the IP protocol used (e.g. TCP/UDP/ICMP)  
+  **source_address**			the IP a packet originated from  
+  **source_port**				the port a packet originated from  
+  **destination_address**		the destination IP of the packet  
+  **destination_port**			the destination port of the packet  
+  **content**					the payload of the packet (8bit)  
+  **ascii_content**				the payload of the packet stripped of any non-ascii characters  
 
  * the content variable is mainly usfull when processing binary data or in combination with Conversis::Utils.hexify()
  * if no interface name is provided dcap will try to figure it out itself
