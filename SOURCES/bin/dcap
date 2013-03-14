@@ -19,7 +19,7 @@ module Conversis
       begin
         status = Timeout::timeout(config.runtime) do
           cap = PacketFu::Capture.new(:iface => config.interface, :start => true, :filter => config.filter, :promisc => config.promisc)
-          puts "packet capture started on interface with IP #{config.interface_ip} running for #{config.runtime} seconds"
+          puts "#{Time.now} [#{config.sessionid}] packet capture started on interface with IP #{config.interface_ip} running for #{config.runtime} seconds"
           loop do
             cap.stream.each do |pkt|
               packet = PacketFu::Packet.parse(pkt)
@@ -46,7 +46,7 @@ module Conversis
           end
         end
       rescue Timeout::Error
-        puts "packet capture ended"
+        puts "#{Time.now} [#{config.sessionid}] packet capture ended"
       end
     end
 
@@ -127,8 +127,6 @@ thread = Thread.new do
   Conversis::Dcap.capture(config)
 end
 
-puts "waiting for capture thread to finish"
 thread.join
-puts "capture thread finished"
 
 exit 0

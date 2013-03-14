@@ -11,7 +11,7 @@ You can provide ruby code on STDIN which will be evaluated for every captured pa
   -i --interface INTERFACE - name of the interface to capture from  
   -m --modules MODULES - list of ruby modules to load separated by , (comma)  
   -f --filter PCAPFILTER - pcap filter  
-  -o --outfile OUTFILE - name of file to append output to (default is STDOUT)  
+  -o --outfile OUTFILE - name of file to append output to (default is STDOUT), this will daemonize the process
   -p --promisc - turn on promisc mode  
   -s --sessionid SESSIONID - a unique identifier to prepend all text with (default is a random string)  
   -r --regex REGEX - a regex to search for (ignored if code is input on STDIN)  
@@ -27,10 +27,12 @@ These variables can be used in your code
   **content**					the payload of the packet (8bit)  
   **ascii_content**				the payload of the packet stripped of any non-ascii characters  
 
- * the content variable is mainly usfull when processing binary data or in combination with Conversis::Utils.hexify()
- * if no interface name is provided dcap will try to figure it out itself
- * if no code is provided on STDIN dcap will default to hexdump output
- * the sessionid is an identifier that is usfull when running several dcap in parallel on many systems
+
+* the content variable is mainly usfull when processing binary data or in combination with Conversis::Utils.hexify()
+* if no interface name is provided dcap will try to figure it out itself
+* if no code is provided on STDIN dcap will default to hexdump output
+* the sessionid is an identifier that is usfull when running several dcap in parallel on many systems
+* if an outfile is specified (-o) dcap will fork and detach itself from the terminal (i.e. daemonize)
 
 # Dependencies
 The following gems must exist locally:
@@ -74,4 +76,14 @@ When installing dcap as a gem they will be automatically installed.
   $ cat http.dcap
   /GET (?<url>.*?) HTTP.*/ =~ ascii_content
   puts "from %s getting url %s" % [destination_address, url] if url
+  ```
+
+  Capture RTP traffic and hexdump all the packets to a file in syslog format.
+  ```bash
+  $ sudo dcap -i en0 -x -r '.*' -f 'udp[1] & 1 != 1 && udp[3] & 1 != 1 && udp[8] & 0x80 == 0x80 && length < 250' -o /var/log/dcap.log
+  ```
+
+  Set interface to promisc mode (only useful on a mirror port) and display local IPs trying to connect to certain remote ports (useful for identifying machines infected with worms)
+  ```bash
+  $ echo 'puts source_address' | sudo dcap -i eth0 -p  -f '(dst port 135 or dst port 445 or dst port 1433) and tcp[tcpflags] & (tcp-syn) != 0 and tcp[tcpflags] & (tcp-ack) = 0 and src net 10.16.0.0/16'
   ```
