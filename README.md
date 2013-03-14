@@ -35,20 +35,26 @@ You can provide ruby code on STDIN which will be evaluated for every captured pa
 
   Hexdump captured packets on the default interface
    ```bash
-  sudo dcap
+  $ sudo dcap
   ```
 
   Run for one hour. Apply the code in mycode.rb for every packet. Load the openssl module. Sniff port 80 only.
    ```bash
-  cat mycode.rb | sudo dcap -m openssl -f 'port 80' -t 3600
+  $ cat mycode.rb | sudo dcap -m openssl -f 'port 80' -t 3600
+
+  $ cat mycode.rb
+  [".{10}\x6C\x75\x6B\x61\x73.{10}", "neil"].each do |sig|
+    hit = content.scan(/#{sig}/i) || nil
+    puts "from %s to %s [%s]" % [source_address, destination_address, hit[0]] unless hit.size.zero?
+  end
   ```
 
   Capture on interface en0. Output payload in hex. Output packets matching the regex in syslog format. Write output to a logfile.
   ```bash
-  sudo dcap -i en0 -x -r '.{10}\x6C\x75\x6B\x61\x73.{10}' -o /var/log/dcap.log
+  $ sudo dcap -i en0 -x -r '.{10}\x6C\x75\x6B\x61\x73.{10}' -o /var/log/dcap.log
   ```
 
   Capture on interface en0. Set a custom session identifier. Match a regex and output to a logfile.
   ```bash
-  sudo dcap -i en0  -s 'myCaptureSession001' -r '.*lukas.*' -o /var/log/dcap.log
+  $ sudo dcap -i en0  -s 'myCaptureSession001' -r '.*lukas.*' -o /var/log/dcap.log
   ```
