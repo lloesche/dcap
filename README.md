@@ -26,6 +26,7 @@ These variables can be used in your code
   **destination_port**			the destination port of the packet  
   **content**					the payload of the packet (8bit)  
   **ascii_content**				the payload of the packet stripped of any non-ascii characters  
+  **packet**            the raw packetfu object in all it's glory
 
 
 * the content variable is mainly usfull when processing binary data or in combination with Conversis::Utils.hexify()
