@@ -72,7 +72,7 @@ When installing dcap as a gem they will be automatically installed.
 
   The following code would sniff for HTTP GET requests and extract the requested URI out of the packet
   ```bash
-  $ cat http.dcap | sudo dcap -i en0
+  $ cat http.dcap | sudo dcap -i en0 -f 'port 80 and tcp[((tcp[12:1] & 0xf0) >> 2):4] = 0x47455420'
 
   $ cat http.dcap
   /GET (?<url>.*?) HTTP.*/ =~ ascii_content
