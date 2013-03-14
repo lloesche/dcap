@@ -5,6 +5,12 @@ Distributed Traffic Capture
 
 You can provide ruby code on STDIN which will be evaluated for every captured packet.
 
+# Dependencies
+The following gems must exist locally:
+* packetfu
+* pcaprub
+When installing dcap as a gem they will be automatically installed.
+
 # Options
 
   -t --runtime RUNTIME - time to capture packets in seconds (default is 60 seconds)  

@@ -14,7 +14,6 @@ This program can capture network traffic in a distributed fashion.
   spec.executables << 'dcap'
   spec.version = '0.0.1'
   spec.add_dependency 'packetfu'
-  spec.add_dependency 'hexdump'
   spec.add_dependency 'pcaprub'
 end
 
