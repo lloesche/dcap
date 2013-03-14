@@ -18,6 +18,7 @@ You can provide ruby code on STDIN which will be evaluated for every captured pa
   -x --hex - output data in hex only  
 
 # Variables
+These variables can be used in your code  
   **protocol**					the IP protocol used (e.g. TCP/UDP/ICMP)  
   **source_address**			the IP a packet originated from  
   **source_port**				the port a packet originated from  
