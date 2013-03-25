@@ -4,6 +4,13 @@ require 'packetfu'
 require 'optparse'
 require 'timeout'
 
+class String
+  def remove_non_printable()
+    #self.encode Encoding.find('ASCII'), { :invalid => :replace, :undef => :replace, :replace => '', :universal_newline => true }
+    self.scan(/[[:print:]]/).join
+  end
+end
+
 module Conversis
   module Dcap
 
@@ -28,7 +35,7 @@ module Conversis
               source_address = packet.ip_saddr
               destination_address = packet.ip_daddr
               content = packet.payload
-              ascii_content = content.encode Encoding.find('ASCII'), { :invalid => :replace, :undef => :replace, :replace => '', :universal_newline => true }
+              ascii_content = content.remove_non_printable
               protocol = packet.proto.last
 
               case packet.ip_proto
@@ -110,7 +117,7 @@ else
   abort "Error: dcap must be run as root - aborting"
 end
 
-config.ruby_code = 'hit = packet.payload.scan(/#{config.regex}/i) || nil; puts "#{Time.now} session-id=\"#{config.sessionid}\" protocol=\"#{protocol}\" source-address=\"#{source_address}\" source-port=\"#{source_port}\" destination-address=\"#{destination_address}\" destination-port=\"#{destination_port}\" content=\"#{config.hexout ? Conversis::Utils.hexify(hit[0], true) : (hit[0].encode Encoding.find(\'ASCII\'), { :invalid => :replace, :undef => :replace, :replace => \'\', :universal_newline => true }) }\"" unless hit.size.zero?' if config.regex
+config.ruby_code = 'hit = packet.payload.scan(/#{config.regex}/i) || nil; puts "#{Time.now} session-id=\"#{config.sessionid}\" protocol=\"#{protocol}\" source-address=\"#{source_address}\" source-port=\"#{source_port}\" destination-address=\"#{destination_address}\" destination-port=\"#{destination_port}\" content=\"#{config.hexout ? Conversis::Utils.hexify(hit[0], true) : (hit[0].remove_non_printable) }\"" unless hit.size.zero?' if config.regex
 config.ruby_code = $stdin.read if select([$stdin], [], [], 1)
 
 if config.outfile

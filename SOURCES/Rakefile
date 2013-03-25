@@ -12,7 +12,7 @@ This program can capture network traffic in a distributed fashion.
   spec.homepage = 'http://www.conversis.de/'
   spec.bindir = 'bin'
   spec.executables << 'dcap'
-  spec.version = '0.0.2'
+  spec.version = '0.0.3'
   spec.add_dependency 'packetfu'
   spec.add_dependency 'pcaprub'
 end
