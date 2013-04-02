@@ -92,6 +92,10 @@ module Conversis
 end
 
 config = Conversis::Dcap::Config.new()
+alt_argv = nil
+if ARGV[0] == 'mcs'
+  alt_argv = ARGV[1].split('@') if(ARGV[1])
+end
 
 optparse = OptionParser.new do |opts|
   opts.banner = "Usage: [ruby code block] | dcap [options]"
@@ -108,7 +112,7 @@ optparse = OptionParser.new do |opts|
 end
 
 begin
-  optparse.parse!
+  optparse.parse!(alt_argv ? alt_argv : ARGV)
 rescue OptionParser::InvalidOption, OptionParser::MissingArgument
   puts $!.to_s
   puts optparse
