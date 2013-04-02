@@ -130,7 +130,7 @@ else
 end
 
 config.ruby_code = 'hit = packet.payload.scan(/#{config.regex}/i) || nil; puts "#{Time.now} session-id=\"#{config.sessionid}\" protocol=\"#{protocol}\" source-address=\"#{source_address}\" source-port=\"#{source_port}\" destination-address=\"#{destination_address}\" destination-port=\"#{destination_port}\" content=\"#{config.hexout ? Conversis::Utils.hexify(hit[0], true) : (hit[0].remove_non_printable) }\"" unless hit.size.zero?' if config.regex
-config.ruby_code = $stdin.read if select([$stdin], [], [], 1)
+config.ruby_code = $stdin.read if select([$stdin], [], [], 1) && $stdin.stat.ftype == 'fifo'
 
 if config.outfile
   exit if fork
